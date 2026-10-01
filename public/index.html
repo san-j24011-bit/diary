@@ -1,382 +1,97 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sample Diary</title>
-    <style>
-      :root {
-        --bg: #f5f7fb;
-        --panel: #ffffff;
-        --panel-alt: #eef4ff;
-        --primary: #4f6ef7;
-        --primary-soft: #eaf0ff;
-        --text: #1f2937;
-        --muted: #667085;
-        --border: #dfe5f1;
-        --shadow: 0 14px 36px rgba(79, 110, 247, 0.12);
-      }
-
-      * { box-sizing: border-box; }
-
-      body {
-        margin: 0;
-        font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
-        background: linear-gradient(180deg, #f8faff 0%, #edf3ff 100%);
-        color: var(--text);
-      }
-
-      .page {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 48px 24px 80px;
-      }
-
-      .topbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: rgba(255, 255, 255, 0.78);
-        border: 1px solid rgba(223, 229, 241, 0.9);
-        border-radius: 18px;
-        padding: 16px 22px;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
-      }
-
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-      }
-
-      .logo {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        background: linear-gradient(135deg, var(--primary) 0%, #7c9bff 100%);
-        display: grid;
-        place-items: center;
-        color: white;
-        font-size: 1.05rem;
-      }
-
-      nav {
-        display: flex;
-        gap: 18px;
-        flex-wrap: wrap;
-      }
-
-      nav a {
-        text-decoration: none;
-        color: var(--muted);
-        font-size: 0.96rem;
-        font-weight: 600;
-      }
-
-      .hero {
-        display: grid;
-        grid-template-columns: 1.2fr 0.8fr;
-        gap: 28px;
-        margin-top: 36px;
-        align-items: center;
-      }
-
-      .hero-copy {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 24px;
-        padding: 36px;
-        box-shadow: var(--shadow);
-      }
-
-      .eyebrow {
-        display: inline-block;
-        background: var(--primary-soft);
-        color: var(--primary);
-        border-radius: 999px;
-        padding: 8px 12px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        letter-spacing: 0.03em;
-      }
-
-      h1 {
-        margin: 18px 0 12px;
-        font-size: clamp(2.2rem, 4vw, 4rem);
-        line-height: 1.05;
-      }
-
-      .lead {
-        color: var(--muted);
-        font-size: 1.05rem;
-        line-height: 1.7;
-        margin: 0;
-      }
-
-      .actions {
-        display: flex;
-        gap: 14px;
-        flex-wrap: wrap;
-        margin-top: 26px;
-      }
-
-      .button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 46px;
-        padding: 0 20px;
-        border-radius: 12px;
-        text-decoration: none;
-        font-weight: 700;
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-      }
-
-      .button.primary {
-        background: linear-gradient(135deg, var(--primary) 0%, #6d84ff 100%);
-        color: #fff;
-        box-shadow: 0 14px 20px rgba(79, 110, 247, 0.22);
-      }
-
-      .button.secondary {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        color: var(--text);
-      }
-
-      .button:hover {
-        transform: translateY(-1px);
-      }
-
-      .hero-card {
-        background: linear-gradient(180deg, #eef3ff 0%, #ffffff 100%);
-        border: 1px solid var(--border);
-        border-radius: 24px;
-        padding: 24px;
-        box-shadow: var(--shadow);
-      }
-
-      .mini-card {
-        background: var(--panel);
-        border-radius: 18px;
-        border: 1px solid var(--border);
-        padding: 20px;
-      }
-
-      .mini-title {
-        font-size: 0.8rem;
-        color: var(--muted);
-        margin-bottom: 8px;
-      }
-
-      .metric {
-        font-size: 2rem;
-        font-weight: 800;
-        margin: 0;
-      }
-
-      .chart {
-        height: 110px;
-        margin-top: 18px;
-        border-radius: 14px;
-        background: linear-gradient(180deg, rgba(79, 110, 247, 0.14), rgba(79, 110, 247, 0.02));
-        position: relative;
-        overflow: hidden;
-      }
-
-      .chart::before {
-        content: "";
-        position: absolute;
-        inset: 18px 16px 12px;
-        background: linear-gradient(180deg, transparent 0%, transparent 60%, rgba(79, 110, 247, 0.14) 60%, rgba(79, 110, 247, 0.14) 100%);
-        border-radius: 10px;
-      }
-
-      .chart::after {
-        content: "";
-        position: absolute;
-        left: 18px;
-        right: 18px;
-        bottom: 18px;
-        height: 52px;
-        background: linear-gradient(135deg, rgba(79, 110, 247, 0.34), rgba(124, 155, 255, 0.08));
-        clip-path: polygon(0% 70%, 16% 62%, 32% 58%, 48% 66%, 64% 30%, 80% 42%, 100% 12%, 100% 100%, 0% 100%);
-      }
-
-      .stats {
-        margin-top: 36px;
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 22px;
-      }
-
-      .stat {
-        background: rgba(255, 255, 255, 0.75);
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        padding: 24px;
-      }
-
-      .stat h3 {
-        margin: 0 0 10px;
-        font-size: 0.9rem;
-        color: var(--muted);
-      }
-
-      .stat strong {
-        font-size: 2rem;
-      }
-
-      .section {
-        margin-top: 36px;
-        background: rgba(255, 255, 255, 0.68);
-        border: 1px solid var(--border);
-        border-radius: 24px;
-        padding: 28px;
-      }
-
-      .section h2 {
-        margin-top: 0;
-        margin-bottom: 18px;
-        font-size: 1.5rem;
-      }
-
-      .cards {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 22px;
-      }
-
-      .feature {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 22px;
-      }
-
-      .feature .icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        background: var(--primary-soft);
-        display: grid;
-        place-items: center;
-        font-size: 1.2rem;
-        margin-bottom: 16px;
-      }
-
-      .feature h3 {
-        margin: 0 0 10px;
-        font-size: 1.05rem;
-      }
-
-      .feature p {
-        margin: 0;
-        color: var(--muted);
-        line-height: 1.65;
-      }
-
-      @media (max-width: 860px) {
-        .hero,
-        .cards,
-        .stats {
-          grid-template-columns: 1fr;
-        }
-
-        .topbar {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 16px;
-        }
-      }
-    </style>
+    <meta name="theme-color" content="#f7f8f4" />
+    <title>日々の記録 | 日記</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="main.js" defer></script>
   </head>
   <body>
-    <div class="page">
+    <div class="app-shell">
       <header class="topbar">
-        <div class="brand">
-          <div class="logo">D</div>
-          <span>Sample Diary</span>
-        </div>
-        <nav>
-          <a href="#overview">概要</a>
-          <a href="#features">特徴</a>
-          <a href="#insights">インサイト</a>
-        </nav>
+        <a class="brand" href="#" aria-label="日々の記録 ホーム">
+          <span class="brand-mark" aria-hidden="true"><span></span></span>
+          <span class="brand-name">日々の記録</span>
+        </a>
+        <div class="topbar-note"><span class="privacy-dot"></span>保存時にスプレッドシートへ同期します</div>
       </header>
 
-      <main>
-        <section class="hero">
-          <div class="hero-copy">
-            <span class="eyebrow">New experience</span>
-            <h1>あなたの一日を、やさしく整理する。</h1>
-            <p class="lead">
-              これは Google Apps Script とは無関係なサンプルページです。<br />
-              シンプルなデザインとわかりやすい構成を中心に、静的な HTML だけで見本を作成しています。
-            </p>
-            <div class="actions">
-              <a class="button primary" href="#features">機能を見る</a>
-              <a class="button secondary" href="#overview">詳細を見る</a>
+      <main class="workspace">
+        <aside class="journal-rail" aria-label="日記一覧">
+          <div class="rail-heading">
+            <div>
+              <p class="overline">YOUR JOURNAL</p>
+              <h1>日記</h1>
+            </div>
+            <button class="icon-button new-entry-button" id="new-entry" type="button" aria-label="新しい日記" title="新しい日記">
+              <span aria-hidden="true">＋</span>
+            </button>
+          </div>
+
+          <label class="search-box">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <span class="visually-hidden">日記を検索</span>
+            <input id="search" type="search" placeholder="日記を検索" autocomplete="off" />
+            <kbd>/</kbd>
+          </label>
+
+          <div class="list-heading">
+            <span>これまでの日記</span>
+            <span class="entry-count" id="entry-count">0</span>
+          </div>
+          <div class="entry-list" id="entry-list" aria-live="polite"></div>
+          <div class="rail-footer">
+            <span class="footer-spark" aria-hidden="true">✳</span>
+            <span>書き留めた日々は、<br />いつでもここに。</span>
+          </div>
+        </aside>
+
+        <section class="editor-area" aria-label="日記を書く">
+          <div class="editor-topline">
+            <div class="today-label"><span class="today-dot"></span><span id="date-label">今日の記録</span></div>
+            <div class="save-state" id="save-state" aria-live="polite">
+              <span class="save-indicator"></span><span id="save-message">保存されています</span>
             </div>
           </div>
 
-          <div class="hero-card">
-            <div class="mini-card">
-              <div class="mini-title">今月のまとめ</div>
-              <p class="metric">24</p>
-              <small style="color: var(--muted);">記録した日数</small>
+          <form id="entry-form" class="entry-form">
+            <div class="date-row">
+              <label class="date-label" for="entry-date">日付</label>
+              <input id="entry-date" name="date" type="date" required />
+              <button class="text-button delete-button" id="delete-entry" type="button" hidden>日記を削除</button>
             </div>
-            <div class="chart" aria-label="Sample chart"></div>
-          </div>
-        </section>
 
-        <section class="stats" id="overview">
-          <article class="stat">
-            <h3>予定</h3>
-            <strong>12</strong>
-          </article>
-          <article class="stat">
-            <h3>完了</h3>
-            <strong>9</strong>
-          </article>
-          <article class="stat">
-            <h3>残り</h3>
-            <strong>3</strong>
-          </article>
-        </section>
+            <input class="title-input" id="entry-title" name="title" type="text" maxlength="100" placeholder="今日をひとことで" autocomplete="off" aria-label="日記のタイトル" />
 
-        <section class="section" id="features">
-          <h2>代表的な機能</h2>
-          <div class="cards">
-            <article class="feature">
-              <div class="icon">✍️</div>
-              <h3>日記を書いて保存</h3>
-              <p>シンプルな入力フォームで思いついたことをすぐにメモできます。</p>
-            </article>
-            <article class="feature">
-              <div class="icon">📅</div>
-              <h3>予定と振り返り</h3>
-              <p>1日の予定と振り返りを分けて管理しやすいレイアウトです。</p>
-            </article>
-            <article class="feature">
-              <div class="icon">📊</div>
-              <h3>進捗を可視化</h3>
-              <p>数字やグラフで変化が見えやすいので、継続しやすくなります。</p>
-            </article>
-          </div>
-        </section>
+            <div class="mood-row">
+              <span class="field-label">今日の気分</span>
+              <div class="mood-picker" role="radiogroup" aria-label="今日の気分">
+                <label class="mood-option"><input type="radio" name="mood" value="great" /><span class="mood-face" aria-hidden="true">☀</span><span class="mood-name">最高</span></label>
+                <label class="mood-option"><input type="radio" name="mood" value="good" /><span class="mood-face" aria-hidden="true">☺</span><span class="mood-name">いい感じ</span></label>
+                <label class="mood-option"><input type="radio" name="mood" value="okay" /><span class="mood-face" aria-hidden="true">◡</span><span class="mood-name">ふつう</span></label>
+                <label class="mood-option"><input type="radio" name="mood" value="low" /><span class="mood-face" aria-hidden="true">☁</span><span class="mood-name">いまひとつ</span></label>
+                <label class="mood-option"><input type="radio" name="mood" value="tough" /><span class="mood-face" aria-hidden="true">☂</span><span class="mood-name">たいへん</span></label>
+              </div>
+            </div>
 
-        <section class="section" id="insights">
-          <h2>使い方の例</h2>
-          <p class="lead" style="margin: 0;">
-            このページは、後で Google Apps Script と接続する前の見本として使えます。<br />
-            レイアウトや文字量を調整しながら、最終的な UI の方向性を決めるのに便利です。
-          </p>
+            <div class="writing-paper">
+              <label class="visually-hidden" for="entry-content">日記の本文</label>
+              <textarea id="entry-content" name="content" placeholder="今日はどんな一日でしたか？心に残ったこと、うれしかったこと、なんでも自由に書いてみましょう。"></textarea>
+              <div class="writing-footer"><span id="word-count">0文字</span><span>⌘ / Ctrl + Enter で保存</span></div>
+            </div>
+
+            <div class="form-footer">
+              <p class="form-hint">完璧な文章じゃなくて大丈夫。</p>
+              <button class="save-button" type="submit"><span aria-hidden="true">↗</span> 日記を保存</button>
+            </div>
+          </form>
+
+          <div class="editor-bottom"><span class="bottom-rule"></span><span>小さな記録が、あなたの物語になる。</span><span class="bottom-rule"></span></div>
         </section>
       </main>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </div>
   </body>
 </html>

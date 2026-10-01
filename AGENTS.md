@@ -26,6 +26,16 @@ gas/
 - Google Apps Script のコードを配置する
 - 初回のサーバーへの反映作業はユーザー実施を前提にする（デプロイ→ウェブアプリ→権限をプロダクトに合うように選択→デプロイ）
 
+## GASの普遍的なルール
+- プロジェクト直下に `gas` ディレクトリがなければ作成する
+- GAS の作業は必ず `gas` ディレクトリの中で行う
+- このブラウザ版のエディタ画面URLを基にして、まずは `clasp clone` してから開発を進める
+  - https://script.google.com/u/0/home/projects/1bc0Bu-gR1nwxMhB_7kgRbvyID2jmebD3abcBgE6Kj6Serg_J5J2jj35J/edit
+- フロントエンドにハードコードする GAS のエンドポイントはこちら
+  - https://script.google.com/macros/s/AKfycbyyjZigB9NvChT9dhJHPZ1xTsaqlR2QvKFYGqK1KASHZEIg85gTOGQ6pEWxUaK8uCL0/exec
+- GAS は JavaScript から GET しか受信できないため、通信は GET を使い、`mode` パラメータで処理を切り替える
+- 例: `?mode=list_view` / `?mode=edit_item`
+
 ## スプレッドシート
 - GAS はスプレッドシートに紐づいていることを前提にする
 - スプレッドシートの取得には下記を使う
@@ -35,6 +45,17 @@ const ss = SpreadsheetApp.getActiveSpreadsheet();
 - プログラム開発でシートの追加が必要になった時は、ユーザーにそのことを伝える
 - シート作成用スクリプトは作らない
 - ただしシート名が `yyyymm` などトランザクションで増える場合は、作成スクリプトがあってもよい
+
+## 日記アプリのスプレッドシート
+- スプレッドシート名: `日記アプリ`
+  - https://docs.google.com/spreadsheets/d/1trNPP8MFtzEeoSNqt1HREJQfWTd6ASVOvhjp_pj17qY/edit
+- GASはこのスプレッドシートのコンテナバインドスクリプトである前提（`getActiveSpreadsheet()` を使う）
+- `diary` シートはユーザーが作成し、1行目に `owner_id`, `date`, `title`, `content`, `mood`, `updated_at` を設定する
+- 日記の保存・削除は既存GASの `save_diary` / `delete_diary` modeで処理し、日付とブラウザーごとの owner_id をキーにする
+- フロントエンドはローカル保存後にGASへ同期し、通信失敗時は再試行キューに残す
+- 日記データはGETのBase64URL payloadで送る。長文によりURLが6000文字を超える場合は同期しない（キューから外し、ローカル保存のみとする）
+- 再試行は「起動時」「オンライン復帰時」「30秒ごと」に行い、オフライン・再試行待ちの状態を画面に表示する
+- GASは `date` を文字列として書き込み（日付型への自動変換を防ぐ）、先頭が `= + - @` タブ・改行の値は `'` を付けて数式化を防ぐ
 
 ## フロントエンドの fetch 通信
 - 通信先は GAS にする
