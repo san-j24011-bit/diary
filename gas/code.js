@@ -1,4 +1,6 @@
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24;
+const ATMOSPHERE_PATTERNS = ['soft', 'wave', 'burst', 'rain', 'calm'];
+const ATMOSPHERE_INTENSITIES = ['low', 'medium', 'high'];
 
 function doGet(e) {
   const params = (e && e.parameter) || {};
@@ -40,6 +42,9 @@ function saveDiary_(params) {
     row[columns.content - 1] = spreadsheetText_(entry.content);
     row[columns.mood - 1] = entry.mood;
     row[columns.updated_at - 1] = entry.updatedAt;
+    // atmosphere 列は任意。列があるときだけ AI の解析結果を保存する
+    const atmosphereIndex = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].indexOf('atmosphere');
+    if (atmosphereIndex !== -1) row[atmosphereIndex] = entry.atmosphere ? JSON.stringify(entry.atmosphere) : '';
     if (existingIndex === -1) sheet.appendRow(row);
     else sheet.getRange(existingIndex + 1, 1, 1, row.length).setValues([row]);
     return { ok: true, updatedAt: entry.updatedAt };
@@ -78,7 +83,25 @@ function validateDiaryParams_(params) {
     title: String(params.title || '').slice(0, 100),
     content: String(params.content || '').slice(0, 30000),
     mood: mood,
+    atmosphere: sanitizeAtmosphere_(params.atmosphere),
     updatedAt: new Date().toISOString(),
+  };
+}
+
+// フロントから送られた雰囲気の値を、安全な形だけに絞る
+function sanitizeAtmosphere_(value) {
+  if (!value || typeof value !== 'object') return null;
+  const palette = (Array.isArray(value.palette) ? value.palette : [])
+    .map(function (color) { return String(color).trim().toLowerCase(); })
+    .filter(function (color) { return /^#[0-9a-f]{6}$/.test(color); })
+    .slice(0, 4);
+  if (palette.length < 2) return null;
+  return {
+    palette: palette,
+    keywords: (Array.isArray(value.keywords) ? value.keywords : []).map(function (word) { return String(word).slice(0, 12); }).slice(0, 3),
+    phrase: String(value.phrase || '').slice(0, 30),
+    pattern: ATMOSPHERE_PATTERNS.indexOf(value.pattern) === -1 ? 'soft' : value.pattern,
+    intensity: ATMOSPHERE_INTENSITIES.indexOf(value.intensity) === -1 ? 'medium' : value.intensity,
   };
 }
 
