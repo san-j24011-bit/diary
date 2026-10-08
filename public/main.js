@@ -310,6 +310,9 @@
   function renderAtmosphere(value) {
     currentAtmosphere = sanitizeAtmosphere(value);
     atmosphereCard.hidden = !currentAtmosphere;
+    const isRain = currentAtmosphere?.pattern === 'rain';
+    atmosphereCard.classList.toggle('is-negative', isRain);
+    document.querySelector('#atmosphere-label').textContent = isRain ? '心に雨が降る日' : currentAtmosphere?.phrase === '平凡な日' ? '平凡な日' : "TODAY'S ATMOSPHERE";
     if (!currentAtmosphere) return;
     document.querySelector('#atmosphere-art').innerHTML = createAtmosphereSvg(currentAtmosphere, `${selectedDate}${currentAtmosphere.phrase}`);
     document.querySelector('#atmosphere-phrase').textContent = currentAtmosphere.phrase;
@@ -321,12 +324,44 @@
   const emotionLexicon = [
     {
       pattern: 'burst', tags: ['よろこび', 'きらめき'], palette: ['#ff9f5a', '#ffd166', '#ef6f8e', '#4cc9a0'],
-      words: ['嬉し', 'うれし', '楽し', 'たのし', '最高', '合格', '成功', 'やった', '笑', '幸せ', 'しあわせ', 'お祝い', '誕生日', 'ワクワク', 'わくわく', '感動', '大好き', '優勝', 'ライブ', 'はしゃ'],
+      words: [
+        "嬉し", "うれし", "楽し", "たのし", "最高", "さいこう", "合格", "成功",
+        "やった", "笑", "幸せ", "しあわせ", "お祝い", "おいわい", "誕生日", "ワクワク",
+        "わくわく", "感動", "大好き", "だいすき", "優勝", "ライブ", "はしゃ", "喜び",
+        "喜ん", "よろこび", "よろこん", "感激", "感無量", "満足", "まんぞく", "充実",
+        "じゅうじつ", "達成", "達成感", "やり遂げ", "やりとげ", "成し遂げ", "なしとげ", "できた",
+        "出来た", "できるようにな", "出来るようにな", "うまくいった", "上手くいった", "うまく行った", "うまくいく", "上手くいく",
+        "順調", "じゅんちょう", "好調", "こうちょう", "絶好調", "手応え", "手ごたえ", "てごたえ",
+        "自信がついた", "自信が付いた", "自信が持て", "自信を持て", "自信がもて", "自信をもて", "誇らし", "ほこらし",
+        "褒められ", "ほめられ", "認められ", "報われた", "むくわれた", "叶った", "かなった", "夢が叶",
+        "夢がかな", "楽しみ", "たのしみ", "期待して", "期待でき", "希望が", "希望を", "前向き",
+        "まえむき", "元気が出", "元気にな", "元気をもら", "げんきにな", "勇気が出", "勇気をもら", "やる気が出た",
+        "やる気がでた", "やる気にな", "気分が上が", "テンションが上が", "気分がいい", "気分が良い", "気分がよい", "気分がよかった",
+        "気分が良かった", "ハッピー", "はっぴー", "ラッキー", "らっきー", "幸運", "いいことが", "良いことが",
+        "いい一日", "良い一日", "素晴らし", "すばらし", "素敵", "すてき", "面白", "おもしろ",
+        "面白かった", "おもしろかった",
+      ],
       phrases: ['光が弾けるような一日', '胸の奥がきらめいた日', '笑い声が色になった日'],
     },
     {
       pattern: 'soft', tags: ['ぬくもり', 'やすらぎ'], palette: ['#f6c38b', '#f3e1c7', '#9dc5bb', '#e8a598'],
-      words: ['穏やか', 'おだやか', 'のんびり', 'ゆっくり', '癒', 'ほっと', '陽だまり', '散歩', 'カフェ', '昼寝', 'ありがとう', '感謝', '優し', 'やさし', 'ぽかぽか', 'あたたか', '温か', 'おいしい', '美味し'],
+      words: [
+        "穏やか", "おだやか", "のんびり", "ゆっくり", "癒", "いやされ", "いやし", "ほっと",
+        "ホッと", "陽だまり", "ひだまり", "散歩", "カフェ", "昼寝", "ありがとう", "有難",
+        "ありがた", "感謝", "優し", "やさし", "ぽかぽか", "ポカポカ", "あたたか", "温か",
+        "暖か", "おいしい", "美味し", "おいしかった", "安心", "あんしん", "安らぎ", "やすらぎ",
+        "安らい", "やすらい", "落ち着", "落ちつ", "おちつ", "リラックス", "りらっくす", "くつろ",
+        "寛い", "寛げ", "和ん", "なごん", "和やか", "なごやか", "心地よ", "ここちよ",
+        "居心地がいい", "居心地が良い", "居心地がよい", "居心地がよかった", "居心地が良かった", "気持ちがいい", "気持ちが良い", "気持ちよ",
+        "気持ち良", "きもちよ", "爽やか", "さわやか", "清々し", "すがすがし", "すっきり", "スッキリ",
+        "さっぱり", "サッパリ", "晴れやか", "晴れ晴れ", "晴ればれ", "はればれ", "気が楽", "気がらく",
+        "肩の荷が下り", "肩の荷がおり", "救われ", "すくわれ", "助かった", "たすかった", "助けてもら", "たすけてもら",
+        "支えてもら", "支えられ", "寄り添って", "よりそって", "励まされ", "はげまされ", "励ましてもら", "はげましてもら",
+        "温もり", "ぬくもり", "思いやり", "おもいやり", "愛情", "愛され", "大切にされ", "大事にされ",
+        "受け入れてもら", "受け入れられ", "仲良く", "仲よく", "なかよく", "仲直り", "なかなおり", "ほっこり",
+        "ホッコリ", "ほのぼの", "平和", "へいわ", "癒や", "満たされ", "みたされ", "癒され",
+        "癒やされ",
+      ],
       phrases: ['やわらかな光に包まれた日', 'ぬくもりがそっと残る日', 'ひだまりのような一日'],
     },
     {
@@ -390,7 +425,25 @@
   };
 
   function countMatches(text, words) {
-    return words.reduce((sum, word) => sum + text.split(word).length - 1, 0);
+    // 同じ箇所の「恐怖」と「怖」などは、長い表現を優先して1件と数える。
+    const uniqueWords = [...new Set(words)].filter(Boolean);
+    let count = 0;
+    let cursor = 0;
+    while (cursor < text.length) {
+      let nextIndex = text.length;
+      let matchLength = 0;
+      for (const word of uniqueWords) {
+        const index = text.indexOf(word, cursor);
+        if (index >= 0 && (index < nextIndex || (index === nextIndex && word.length > matchLength))) {
+          nextIndex = index;
+          matchLength = word.length;
+        }
+      }
+      if (!matchLength) break;
+      count += 1;
+      cursor = nextIndex + matchLength;
+    }
+    return count;
   }
 
   function buildAtmosphere(title, content, mood) {
@@ -401,8 +454,17 @@
       const matches = countMatches(text, emotion.words);
       return { emotion, matches, score: matches * 2 + (moodWeights[mood]?.[emotion.pattern] || 0) };
     });
-    scores.sort((first, second) => second.score - first.score);
-    const top = scores[0].score > 0 ? scores[0].emotion : emotionLexicon[1];
+    const positiveScores = scores.filter(({ emotion }) => ['burst', 'soft'].includes(emotion.pattern));
+    const positiveCount = countMatches(text, positiveScores.flatMap(({ emotion }) => emotion.words));
+    const negativeScore = scores.find(({ emotion }) => emotion.pattern === 'rain');
+    const negativeCount = negativeScore.matches;
+    const isNeutral = positiveCount === negativeCount;
+    // 気分選択は件数に加えない。同数（0件同士を含む）は平凡な日。
+    positiveScores.sort((a, b) => b.matches - a.matches || b.score - a.score);
+    const top = isNeutral
+      ? { pattern: 'calm', tags: ['日常', '平穏'], palette: ['#b7c4be', '#dce3dd', '#a6b5af', '#eef0e9'], phrases: ['平凡な日'] }
+      : positiveCount > negativeCount ? positiveScores[0].emotion : negativeScore.emotion;
+    scores.sort((a, b) => b.matches - a.matches);
 
     const sceneries = sceneryColors
       .map((scenery) => ({ ...scenery, count: countMatches(text, scenery.words) }))
@@ -410,18 +472,21 @@
       .sort((first, second) => second.count - first.count)
       .slice(0, 2);
     // 情景の色を主役のすぐ後ろに差し込み、その日だけの配色にする
-    const palette = [top.palette[0], ...sceneries.map((scenery) => scenery.color), ...top.palette.slice(1)].slice(0, 4);
+    const palette = top.pattern === 'rain' || isNeutral
+      ? [...top.palette]
+      : [top.palette[0], ...sceneries.map((scenery) => scenery.color), ...top.palette.slice(1)].slice(0, 4);
 
     // 2番目に強い感情があれば、そのことばも添える
-    const second = scores[1].matches > 0 ? scores[1].emotion.tags[0] : null;
-    const keywords = [...new Set([...sceneries.map((scenery) => scenery.keyword), top.tags[0], second, top.tags[1]].filter(Boolean))].slice(0, 3);
+    const second = scores.find(({ emotion, matches }) => matches > 0 && emotion.pattern !== top.pattern)?.emotion.tags[0];
+    const keywords = isNeutral ? ['日常', '平穏', 'いつもの日']
+      : [...new Set([...sceneries.map((scenery) => scenery.keyword), top.tags[0], second, top.tags[1]].filter(Boolean))].slice(0, 3);
 
     const random = seededRandom(text);
     const basePhrase = top.phrases[Math.floor(random() * top.phrases.length)];
-    const phrase = sceneries[0] && !basePhrase.includes(sceneries[0].keyword) ? `${sceneries[0].keyword}と、${basePhrase}` : basePhrase;
+    const phrase = !isNeutral && sceneries[0] && !basePhrase.includes(sceneries[0].keyword) ? `${sceneries[0].keyword}と、${basePhrase}` : basePhrase;
 
     const exclamations = (text.match(/[!！]/g) || []).length;
-    const strength = scores[0].matches + exclamations + (['great', 'tough'].includes(mood) ? 2 : 0);
+    const strength = isNeutral ? 0 : Math.max(positiveCount, negativeCount) + exclamations;
     const intensity = strength >= 6 ? 'high' : strength >= 2 ? 'medium' : 'low';
 
     return { palette, keywords, phrase: phrase.slice(0, 30), pattern: top.pattern, intensity };

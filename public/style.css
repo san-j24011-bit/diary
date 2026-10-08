@@ -113,6 +113,16 @@ button { color: inherit; }
 .entry-item-palette { display: block; height: 3px; margin-top: 8px; border-radius: 2px; opacity: .85; }
 .atmosphere-note { margin: 2px 0 0; color: #a0a79f; font-size: 9px; }
 
+
+/* 雨のカードは色と見出しの両方で気持ちを表す。 */
+.atmosphere-card.is-negative { border-color: #a3b1c2; background: #edf1f5; }
+.atmosphere-card.is-negative .atmosphere-art { background: #dce4ec; }
+.atmosphere-card.is-negative .atmosphere-body { border-top: 1px solid #c3ceda; }
+.atmosphere-card.is-negative .overline { color: #46576c; font-size: 12px; letter-spacing: .04em; }
+.atmosphere-card.is-negative .atmosphere-phrase { color: #303f52; }
+.atmosphere-card.is-negative .atmosphere-keywords span { border-color: #bcc9d6; background: #e1e8ef; color: #46576c; }
+.atmosphere-card.is-negative .atmosphere-note { color: #526378; line-height: 1.7; }
+
 @media (min-width: 1200px) { .workspace { border: 0; } }
 @media (max-width: 760px) {
   .topbar { height: 60px; padding: 0 20px; }
