@@ -149,3 +149,94 @@ button { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+.encouragement-card { padding: 20px; border: 1px solid #c4cfdc; border-radius: 12px; background: #f8fafc; }
+.encouragement-card[hidden] { display: none; }
+.encouragement-label { margin: 0 0 12px; color: #526378; font-size: 12px; font-weight: 600; }
+.encouragement-text { margin: 0; color: #303f52; font: 500 16px/1.9 'Noto Serif JP', serif; overflow-wrap: anywhere; }
+.encouragement-author { margin: 14px 0 0; color: #46576c; font-size: 13px; }
+.encouragement-source { display: inline-block; padding: 12px 0; color: #46576c; font-size: 12px; line-height: 1.6; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.encouragement-source:focus-visible { outline: 2px solid #46576c; outline-offset: 4px; }
+
+[hidden] { display: none !important; }
+.login-panel { width: min(440px, calc(100% - 40px)); margin: 64px auto; padding: 32px; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); }
+.login-panel h1 { margin: 8px 0 16px; font: 500 26px/1.5 'Noto Serif JP', serif; }
+.login-description, .login-help { color: #58695e; font-size: 13px; line-height: 1.8; }
+.login-panel form { display: grid; gap: 10px; margin-top: 26px; }
+.login-panel label { font-size: 14px; }
+.login-panel input { min-width: 0; width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid #bac8bb; border-radius: 8px; background: white; color: var(--ink); font-size: 16px; }
+.login-panel input:focus-visible, .account-button:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+#login-message { min-height: 24px; margin: 0; color: #8b4131; font-size: 13px; line-height: 1.7; }
+.login-panel .save-button { min-height: 46px; font-size: 14px; border-radius: 8px; }
+.account-controls { display: flex; gap: 12px; align-items: center; min-width: 0; font-size: 12px; }
+#account-name { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-button { min-height: 44px; padding: 8px 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+button:disabled { opacity: .6; cursor: wait; }
+#auth-status { margin: 0; padding: 0 20px; color: #8b4131; font-size: 13px; }
+@media (max-width: 760px) { .topbar-note { display: none; } .login-panel { margin-top: 32px; padding: 24px; } #account-name { max-width: 85px; } }
+
+.auth-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin-top: 24px; background: var(--green-pale); border-radius: 10px; }
+.auth-mode button { min-height: 44px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: #46594c; cursor: pointer; font-size: 14px; }
+.auth-mode button[aria-pressed="true"] { border-color: #cfdbcf; background: white; color: var(--green-dark); font-weight: 600; }
+.auth-mode button:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.signup-field { display: grid; gap: 10px; }
+.signup-hint { margin: 0; color: #58695e; font-size: 12px; line-height: 1.7; }
+
+/* スマホでは読みやすい文字と、指で押しやすい操作領域にする。 */
+@media (max-width: 760px) {
+  body, .app-shell { min-height: 100svh; }
+  .topbar { height: auto; min-height: 64px; padding: 10px 16px; gap: 12px; flex-wrap: wrap; }
+  .brand { gap: 8px; }
+  .account-controls { margin-left: auto; gap: 8px; }
+  #account-name { max-width: 72px; }
+  .account-button { font-size: 13px; }
+  .journal-rail { padding: 20px 16px 16px; }
+  .overline { font-size: 11px; }
+  .icon-button { width: 44px; height: 44px; border-radius: 10px; }
+  .search-box { min-height: 48px; border-radius: 10px; padding: 0 12px; }
+  .search-box input { min-height: 46px; font-size: 16px; }
+  .search-box kbd { display: none; }
+  .list-heading, .entry-count { font-size: 12px; }
+  .entry-list { gap: 10px; max-height: 174px; margin: 0 -16px; padding: 0 16px 8px; overscroll-behavior-x: contain; }
+  .entry-item { flex-basis: 210px; width: 210px; min-height: 104px; padding: 14px; border-radius: 12px; }
+  .entry-item-date { font-size: 12px; }
+  .entry-item-title { font-size: 16px; }
+  .entry-item-preview, .empty-list { font-size: 13px; }
+  .editor-area { min-width: 0; padding: 24px 16px calc(28px + env(safe-area-inset-bottom, 0px)); }
+  .editor-topline { flex-wrap: wrap; gap: 10px; }
+  .today-label, .save-state { color: #58695e; font-size: 12px; line-height: 1.7; }
+  .save-state { min-width: 0; align-items: flex-start; }
+  .save-indicator { flex-shrink: 0; margin-top: 7px; }
+  #save-message { overflow-wrap: anywhere; }
+  .date-row { flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .date-label, .field-label { color: #58695e; font-size: 13px; }
+  .date-row input { min-height: 44px; min-width: 0; max-width: 100%; font-size: 16px; }
+  .text-button { min-height: 44px; padding: 8px; font-size: 13px; }
+  .title-input { font-size: 24px; margin: 16px 0 20px; }
+  .mood-picker { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+  .mood-option { min-width: 0; min-height: 66px; gap: 6px; padding: 4px 0; }
+  .mood-face { width: 44px; height: 44px; font-size: 24px; }
+  .mood-name { font-size: 11px; white-space: normal; text-align: center; }
+  .writing-paper { min-height: 320px; }
+  .writing-paper textarea { min-height: 290px; font-size: 16px; line-height: 36px; }
+  .writing-footer { font-size: 12px; color: #65766a; }
+  .keyboard-shortcut { display: none; }
+  .legacy-import { margin-top: 20px; min-height: 48px; line-height: 1.7; }
+  .form-footer { flex-direction: column; align-items: stretch; gap: 14px; }
+  .form-hint { color: #65766a; font-size: 13px; line-height: 1.7; }
+  .save-button { min-height: 50px; font-size: 16px; border-radius: 10px; }
+  .atmosphere-card { border-radius: 14px; }
+  .atmosphere-body { padding: 18px 16px; gap: 12px; }
+  .atmosphere-phrase { font-size: 18px; overflow-wrap: anywhere; }
+  .atmosphere-keywords span { font-size: 12px; }
+  .atmosphere-note { color: #65766a; font-size: 12px; line-height: 1.8; }
+  .encouragement-card { padding: 16px; }
+  .editor-bottom { font-size: 11px; line-height: 1.8; text-align: center; }
+  .bottom-rule { flex-shrink: 0; width: 16px; }
+  .toast { right: 16px; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); padding: 14px 16px; font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; }
+  .login-panel { width: min(440px, calc(100% - 32px)); margin: 24px auto; padding: 24px 20px; }
+  .login-panel h1 { font-size: 24px; overflow-wrap: anywhere; }
+  .login-description, .login-help { font-size: 14px; }
+  .login-panel input { min-height: 50px; }
+  .login-panel .save-button { min-height: 50px; font-size: 16px; }
+  .auth-mode button { min-height: 48px; }
+}

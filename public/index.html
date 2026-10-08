@@ -2,10 +2,11 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#f7f8f4" />
     <title>日々の記録 | 日記</title>
     <link rel="stylesheet" href="style.css" />
+    <script src="auth.js" defer></script>
     <script src="main.js" defer></script>
   </head>
   <body>
@@ -15,10 +16,39 @@
           <span class="brand-mark" aria-hidden="true"><span></span></span>
           <span class="brand-name">日々の記録</span>
         </a>
+        <div class="account-controls" id="account-controls" hidden><span id="account-name"></span><button class="account-button" id="logout" type="button">ログアウト</button></div>
         <div class="topbar-note"><span class="privacy-dot"></span>保存時にスプレッドシートへ同期します</div>
       </header>
 
-      <main class="workspace">
+      <section class="login-panel" id="login-panel" aria-labelledby="login-heading">
+        <p class="overline">YOUR PRIVATE JOURNAL</p>
+        <h1 id="login-heading">おかえりなさい</h1>
+        <p class="login-description" id="login-description">ログインして、あなたの日々の記録を開きましょう。</p>
+        <div class="auth-mode" aria-label="ログインまたは新規登録">
+          <button id="mode-login" type="button" aria-pressed="true">ログイン</button>
+          <button id="mode-signup" type="button" aria-pressed="false">新規登録</button>
+        </div>
+        <form id="login-form">
+          <div class="signup-field" id="signup-fields" hidden>
+            <label for="signup-name">表示名（任意）</label>
+            <input id="signup-name" type="text" autocomplete="nickname" maxlength="40" placeholder="あなたの呼び名" />
+          </div>
+          <label for="login-username">ユーザー名</label>
+          <input id="login-username" type="text" autocomplete="username" required autocapitalize="none" spellcheck="false" />
+          <label for="login-password">パスワード</label>
+          <input id="login-password" type="password" autocomplete="current-password" required maxlength="128" />
+          <div class="signup-field" id="signup-repeat-field" hidden>
+            <p class="signup-hint">パスワードは5文字以上で設定してください。</p>
+            <label for="login-password-repeat">パスワード（確認）</label>
+            <input id="login-password-repeat" type="password" autocomplete="new-password" maxlength="128" disabled />
+          </div>
+          <p id="login-message" role="status" aria-live="polite"></p>
+          <button class="save-button" id="auth-submit" type="submit">ログイン</button>
+        </form>
+        <p class="login-help">ユーザー名は日本語・数字・記号など自由に使えます。パスワードを忘れた場合は管理者にお問い合わせください。</p>
+      </section>
+      <p id="auth-status" role="status" aria-live="polite"></p>
+      <main class="workspace" id="diary-workspace" hidden>
         <aside class="journal-rail" aria-label="日記一覧">
           <div class="rail-heading">
             <div>
@@ -79,9 +109,10 @@
             <div class="writing-paper">
               <label class="visually-hidden" for="entry-content">日記の本文</label>
               <textarea id="entry-content" name="content" placeholder="今日はどんな一日でしたか？心に残ったこと、うれしかったこと、なんでも自由に書いてみましょう。"></textarea>
-              <div class="writing-footer"><span id="word-count">0文字</span><span>⌘ / Ctrl + Enter で保存</span></div>
+              <div class="writing-footer"><span id="word-count">0文字</span><span class="keyboard-shortcut">⌘ / Ctrl + Enter で保存</span></div>
             </div>
 
+            <button class="account-button legacy-import" id="import-legacy" type="button" hidden>このブラウザーの以前の日記を取り込む</button>
             <div class="form-footer">
               <p class="form-hint">完璧な文章じゃなくて大丈夫。</p>
               <button class="save-button" type="submit"><span aria-hidden="true">↗</span> 日記を保存</button>
@@ -94,6 +125,12 @@
                 <p class="atmosphere-phrase" id="atmosphere-phrase"></p>
                 <div class="atmosphere-keywords" id="atmosphere-keywords"></div>
                 <div class="atmosphere-palette" id="atmosphere-palette"></div>
+                <aside class="encouragement-card" id="encouragement" aria-label="心に寄り添う名言" hidden>
+                  <p class="encouragement-label">今日のあなたへ</p>
+                  <blockquote class="encouragement-text" id="encouragement-text"></blockquote>
+                  <p class="encouragement-author" id="encouragement-author"></p>
+                  <a class="encouragement-source" id="encouragement-source" target="_blank" rel="noopener noreferrer"></a>
+                </aside>
                 <p class="atmosphere-note">✦ 書いたことばから、この端末の中で色と模様を描いています</p>
               </div>
             </section>

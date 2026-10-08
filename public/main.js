@@ -1,7 +1,6 @@
 (() => {
-  const storageKey = 'hibi-journal.entries.v1';
-  const ownerStorageKey = 'hibi-journal.owner.v1';
-  const syncQueueStorageKey = 'hibi-journal.sync-queue.v1';
+  let storageKey = '';
+  let syncQueueStorageKey = '';
   const maxSyncUrlLength = 6000;
   const retryIntervalMs = 30000;
   const gasEndpoint = 'https://script.google.com/macros/s/AKfycbyyjZigB9NvChT9dhJHPZ1xTsaqlR2QvKFYGqK1KASHZEIg85gTOGQ6pEWxUaK8uCL0/exec';
@@ -25,9 +24,9 @@
   const toast = document.querySelector('#toast');
   const atmosphereCard = document.querySelector('#atmosphere');
   const atmospherePatterns = ['soft', 'wave', 'burst', 'rain', 'calm'];
-  let entries = loadEntries();
-  let syncQueue = loadSyncQueue();
-  let ownerId = loadOwnerId();
+  let entries = [];
+  let syncQueue = [];
+  let ownerId = null;
   let selectedDate = '';
   let toastTimer;
   let syncInFlight = false;
@@ -47,18 +46,6 @@
       return Array.isArray(stored) ? stored.filter((entry) => entry && typeof entry.date === 'string') : [];
     } catch {
       return [];
-    }
-  }
-
-  function loadOwnerId() {
-    try {
-      const stored = localStorage.getItem(ownerStorageKey);
-      if (stored && /^[A-Za-z0-9-]{16,80}$/.test(stored)) return stored;
-      const generated = window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
-      localStorage.setItem(ownerStorageKey, generated);
-      return generated;
-    } catch {
-      return `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
     }
   }
 
@@ -169,19 +156,22 @@
   }
 
   async function flushSyncQueue() {
-    if (syncInFlight || syncQueue.length === 0) return;
+    if (!ownerId || !window.diaryAuth.token() || syncInFlight || syncQueue.length === 0) return;
     if (!navigator.onLine) {
       showPendingSyncState();
       return;
     }
     syncInFlight = true;
+    const syncingOwner = ownerId;
+    document.querySelector('#logout').disabled = true;
     try {
-      while (syncQueue.length > 0) {
+      while (syncQueue.length > 0 && ownerId === syncingOwner) {
         const operation = syncQueue[0];
         const payload = { ...operation.entry, owner_id: ownerId };
         const url = new URL(gasEndpoint);
         url.searchParams.set('mode', operation.action === 'save' ? 'save_diary' : 'delete_diary');
         url.searchParams.set('payload', encodeBase64Url(JSON.stringify(payload)));
+        url.searchParams.set('token', window.diaryAuth.token());
         if (url.href.length > maxSyncUrlLength) {
           // 長文はGETで送れないため同期対象から外し、ローカル保存のみにする
           syncQueue.shift();
@@ -192,9 +182,11 @@
         }
 
         if (operation.entry.date === selectedDate) setSyncState('syncing', 'スプレッドシートへ同期中');
-        const response = await fetch(url.href);
+        const response = await fetch(url.href, { cache: 'no-store', referrerPolicy: 'no-referrer' });
         if (!response.ok) throw new Error('GASに接続できませんでした。');
         const result = await response.json();
+        if (ownerId !== syncingOwner) return;
+        if (result.code === 'AUTH_REQUIRED') window.diaryAuth.expire();
         if (!result.ok) throw new Error(result.message || 'スプレッドシートへ保存できませんでした。');
 
         syncQueue.shift();
@@ -205,11 +197,13 @@
         }
       }
     } catch (error) {
+      if (ownerId !== syncingOwner) return;
       const failedEntry = syncQueue[0]?.entry;
       if (failedEntry?.date === selectedDate) setSyncState('error', '同期できません。再試行待ちです');
       showToast(error.message || 'スプレッドシートに接続できません。再試行します。');
     } finally {
       syncInFlight = false;
+      document.querySelector('#logout').disabled = false;
     }
   }
 
@@ -307,11 +301,41 @@
     </svg>`;
   }
 
+  // 原典を確認した名言。日本語はこのアプリでの訳。
+  const encouragementQuotes = [
+    {
+      text: '世界は苦しみに満ちていますが、それを乗り越えることにも満ちています。',
+      author: 'ヘレン・ケラー', work: 'Optimism（1903年）',
+      source: 'https://www.afb.org/about-afb/history/helen-keller/books-essays-speeches/optimism-1903',
+    },
+    {
+      text: '行く手を阻むものが、その道を進む助けになる。',
+      author: 'マルクス・アウレリウス', work: '自省録 第5巻20節',
+      source: 'https://www.gutenberg.org/files/6920/6920-h/6920-h.htm',
+    },
+  ];
+
+  function renderEncouragement(isNegative) {
+    const quoteCard = document.querySelector('#encouragement');
+    quoteCard.hidden = !isNegative;
+    if (!isNegative) return;
+    // 同じ日付は再入力・再読み込みでも同じ名言。翌日は次の名言へ。
+    const day = Math.floor(Date.parse(selectedDate + 'T00:00:00Z') / 86400000);
+    const index = Number.isFinite(day) ? ((day % encouragementQuotes.length) + encouragementQuotes.length) % encouragementQuotes.length : 0;
+    const quote = encouragementQuotes[index];
+    document.querySelector('#encouragement-text').textContent = quote.text;
+    document.querySelector('#encouragement-author').textContent = quote.author;
+    const source = document.querySelector('#encouragement-source');
+    source.textContent = quote.work + '（日本語はアプリ訳）';
+    source.href = quote.source;
+  }
+
   function renderAtmosphere(value) {
     currentAtmosphere = sanitizeAtmosphere(value);
     atmosphereCard.hidden = !currentAtmosphere;
     const isRain = currentAtmosphere?.pattern === 'rain';
     atmosphereCard.classList.toggle('is-negative', isRain);
+    renderEncouragement(isRain);
     document.querySelector('#atmosphere-label').textContent = isRain ? '心に雨が降る日' : currentAtmosphere?.phrase === '平凡な日' ? '平凡な日' : "TODAY'S ATMOSPHERE";
     if (!currentAtmosphere) return;
     document.querySelector('#atmosphere-art').innerHTML = createAtmosphereSvg(currentAtmosphere, `${selectedDate}${currentAtmosphere.phrase}`);
@@ -535,6 +559,7 @@
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
+    if (!ownerId) { showToast('ログインしてください。'); return; }
     const title = titleInput.value.trim();
     const content = contentInput.value.trim();
     if (!title && !content) {
@@ -605,6 +630,67 @@
     showToast('オフラインです。ブラウザーに保存し、再接続時に同期します。');
   });
   window.setInterval(flushSyncQueue, retryIntervalMs);
-  openEntry(localDateString());
-  flushSyncQueue();
+  function legacyEntries() {
+    try {
+      const stored = JSON.parse(localStorage.getItem('hibi-journal.entries.v1') || '[]');
+      return Array.isArray(stored) ? stored.filter(entry => entry && /^\d{4}-\d{2}-\d{2}$/.test(entry.date)) : [];
+    } catch { return []; }
+  }
+  document.querySelector('#import-legacy').addEventListener('click', () => {
+    if (!ownerId || !window.confirm('以前の日記を、現在ログインしているアカウントへ取り込みます。同じ日付の記録は上書きしません。よろしいですか？')) return;
+    const knownDates = new Set([...entries.map(entry => entry.date), ...syncQueue.map(item => item.entry.date)]);
+    const imported = legacyEntries().filter(entry => !knownDates.has(entry.date));
+    const previous = entries;
+    entries = [...entries, ...imported];
+    if (!saveEntries()) { entries = previous; return; }
+    imported.forEach(entry => {
+      syncQueue.push({ action: 'save', entry: { ...entry } });
+    });
+    persistSyncQueue();
+    renderList();
+    showToast(imported.length + '件の日記を取り込みました');
+    flushSyncQueue();
+  });
+
+  window.addEventListener('diary-auth-change', async event => {
+    window.clearTimeout(atmosphereTimer);
+    const user = event.detail;
+    ownerId = user?.id || null;
+    entries = [];
+    syncQueue = [];
+    titleInput.value = '';
+    contentInput.value = '';
+    searchInput.value = '';
+    renderAtmosphere(null);
+    list.innerHTML = '';
+    document.querySelector('#auth-status').textContent = '';
+    document.querySelector('#import-legacy').hidden = !user || legacyEntries().length === 0;
+    if (!user) { document.querySelector('#entry-count').textContent = '0'; return; }
+    storageKey = 'hibi-journal.entries.account.' + user.id;
+    syncQueueStorageKey = 'hibi-journal.queue.account.' + user.id;
+    entries = loadEntries();
+    syncQueue = loadSyncQueue();
+    openEntry(localDateString());
+    const workspace = document.querySelector('#diary-workspace');
+    workspace.inert = true;
+    try {
+      const result = await window.diaryAuth.request('list_diary');
+      if (ownerId !== user.id) return;
+      const merged = new Map(entries.map(entry => [entry.date, entry]));
+      const pendingDates = new Set(syncQueue.map(item => item.entry.date));
+      for (const entry of result.entries || []) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.date) || pendingDates.has(entry.date)) continue;
+        const local = merged.get(entry.date);
+        if (!local || (Date.parse(entry.updatedAt) || 0) >= (Date.parse(local.updatedAt) || 0)) merged.set(entry.date, entry);
+      }
+      entries = [...merged.values()];
+      saveEntries();
+      openEntry(localDateString());
+      flushSyncQueue();
+    } catch (error) {
+      if (ownerId === user.id) document.querySelector('#auth-status').textContent = 'シートから取得できませんでした。この端末の記録を表示しています。';
+    } finally { workspace.inert = false; }
+  });
+  window.diaryAuth.start();
+
 })();
