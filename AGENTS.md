@@ -65,6 +65,7 @@ const ss = SpreadsheetApp.getActiveSpreadsheet();
 - 画像はフロントで SVG の抽象アートとして描く（日付＋一言をシードにして同じ日記は同じ絵になる）
 - `diary` シートに任意の `atmosphere` 列があれば JSON で同期する。GAS 側でも値を検証する（色は #RRGGBB のみ）
 - 辞書を増やすときは main.js の `emotionLexicon` / `sceneryColors` に追記する
+- ネガティブな表現は `emotionLexicon` の `rain` 辞書で、悲しみ・疲労・不安・怒り・自己否定などの漢字／かな／口語を検知する。活用形は共通の語幹を使い、同じ表現の重複登録を避ける。辞書による部分一致であり、否定や文脈の完全な判定は行わない。
 
 ## フロントエンドの fetch 通信
 - 通信先は GAS にする
