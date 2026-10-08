@@ -118,6 +118,16 @@ console.log('PASS: Japanese, 1 character, emoji, symbols, internal space, 50 cha
   }
   await browserLogin('alice');
   assert.equal(element('#entry-count').textContent, '1');
+  element('#entry-date').value = '2026-10-08';
+  element('#entry-date').handlers.change();
+  assert.equal(element('#entry-content').value, 'private');
+  element('#new-entry').handlers.click();
+  assert.equal(element('#entry-content').value, '', 'plus opens empty draft');
+  assert.equal(element('#entry-title').value, '');
+  assert.equal(element('#date-label').textContent, '新しい日記');
+  assert.equal(element('#delete-entry').hidden, true);
+  assert.equal(JSON.parse(memory.get('hibi-journal.entries.account.' + alice)).length, 1, 'plus preserves saved diary');
+
   await element('#logout').handlers.click(); await settle();
   assert.equal(element('#diary-workspace').hidden, true);
   assert.equal(element('#entry-list').innerHTML, '');

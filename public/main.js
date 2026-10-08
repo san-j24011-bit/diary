@@ -28,6 +28,7 @@
   let syncQueue = [];
   let ownerId = null;
   let selectedDate = '';
+  let isNewDraft = false;
   let toastTimer;
   let syncInFlight = false;
   let currentAtmosphere = null;
@@ -107,7 +108,7 @@
       const title = entry.title || 'タイトルなし';
       const preview = entry.content || '本文なし';
       const palette = buildAtmosphere(entry.title || '', entry.content || '', entry.mood)?.palette;
-      return `<button class="entry-item" type="button" data-date="${escapeHtml(entry.date)}" aria-current="${entry.date === selectedDate}">
+      return `<button class="entry-item" type="button" data-date="${escapeHtml(entry.date)}" aria-current="${!isNewDraft && entry.date === selectedDate}">
         <span class="entry-item-date">${formatDate(entry.date, { month: 'long', day: 'numeric', weekday: 'short' })}${mood ? `<span class="entry-item-mood" aria-label="気分: ${mood.label}">${mood.symbol}</span>` : ''}</span>
         <span class="entry-item-title">${escapeHtml(title)}</span>
         <span class="entry-item-preview">${escapeHtml(preview.replace(/\s+/g, ' '))}</span>
@@ -526,6 +527,7 @@
   }
 
   function openEntry(date) {
+    isNewDraft = false;
     selectedDate = date;
     const entry = entries.find((item) => item.date === date);
     dateInput.value = date;
@@ -540,6 +542,30 @@
     updateWordCount();
     if (!showPendingSyncState()) setSavedState(false);
     renderList();
+  }
+
+  function startNewEntry() {
+    if (!ownerId) return;
+    const previous = isNewDraft ? null : entries.find(entry => entry.date === selectedDate);
+    const mood = form.querySelector('input[name="mood"]:checked')?.value || '';
+    const changed = titleInput.value.trim() !== (previous?.title || '') || contentInput.value.trim() !== (previous?.content || '') || mood !== (previous?.mood || '');
+    if (changed && !window.confirm('未保存の文章があります。新しい日記を開くと入力内容が消えます。続けますか？')) return;
+    window.clearTimeout(atmosphereTimer);
+    isNewDraft = true;
+    selectedDate = localDateString();
+    dateInput.value = selectedDate;
+    titleInput.value = '';
+    contentInput.value = '';
+    form.querySelectorAll('input[name="mood"]').forEach(radio => { radio.checked = false; });
+    deleteButton.hidden = true;
+    renderAtmosphere(null);
+    updateWordCount();
+    document.querySelector('#date-label').textContent = '新しい日記';
+    setSavedState(true, '新しい日記を書いています');
+    renderList();
+    titleInput.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+    titleInput.focus({ preventScroll: true });
+    showToast(entries.some(entry => entry.date === selectedDate) ? '今日は記録済みです。別の日付を選ぶか、保存時に上書きできます。' : '新しい日記を開きました');
   }
 
   function showToast(message) {
@@ -571,6 +597,7 @@
     const mood = form.querySelector('input[name="mood"]:checked')?.value || '';
     const updatedAt = new Date().toISOString();
     const index = entries.findIndex((entry) => entry.date === selectedDate);
+    if (isNewDraft && index >= 0 && !window.confirm('この日付の日記はすでにあります。新しい内容で上書きしますか？')) return;
     const entry = { date: selectedDate, title, content, mood, updatedAt };
     renderAtmosphere(currentFormAtmosphere());
     if (currentAtmosphere) entry.atmosphere = currentAtmosphere;
@@ -583,6 +610,8 @@
       return;
     }
 
+    isNewDraft = false;
+    updateDateLabel();
     deleteButton.hidden = false;
     setSavedState(false, '保存しました');
     renderList();
@@ -590,7 +619,7 @@
     if (syncQueue.length > 0) showToast('このブラウザーに保存しました。シートへ同期しています。');
   });
 
-  document.querySelector('#new-entry').addEventListener('click', () => openEntry(localDateString()));
+  document.querySelector('#new-entry').addEventListener('click', startNewEntry);
   dateInput.addEventListener('change', () => openEntry(dateInput.value || localDateString()));
   list.addEventListener('click', (event) => {
     const item = event.target.closest('[data-date]');
